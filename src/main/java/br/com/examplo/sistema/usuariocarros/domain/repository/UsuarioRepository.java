@@ -1,13 +1,14 @@
 package br.com.examplo.sistema.usuariocarros.domain.repository;
 
-import br.com.examplo.sistema.usuariocarros.domain.Usuario;
+import br.com.examplo.sistema.usuariocarros.domain.model.Usuario;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UsuarioRepository {
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByLogin(String login);

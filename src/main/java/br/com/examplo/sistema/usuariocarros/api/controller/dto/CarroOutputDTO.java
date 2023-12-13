@@ -8,6 +8,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class CarroOutputDTO {
+    private Long id;
     private Integer year;
     private String licensePlate;
     private String model;

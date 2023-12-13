@@ -1,7 +1,7 @@
 package br.com.examplo.sistema.usuariocarros.domain.repository;
 
-import br.com.examplo.sistema.usuariocarros.domain.Carro;
-import br.com.examplo.sistema.usuariocarros.domain.Usuario;
+import br.com.examplo.sistema.usuariocarros.domain.model.Carro;
+import br.com.examplo.sistema.usuariocarros.domain.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

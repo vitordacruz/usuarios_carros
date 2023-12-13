@@ -142,12 +142,14 @@ public class ApiExceptionHandler  extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleValidationInternal(Exception ex, BindingResult bindingResult,
                                                               HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        String textoErro = messageSource.getMessage("campos.nao.preenchidos", null , null) + ":";
+        String textoErro = messageSource.getMessage("campos.invalidos", null , null) + ":";
 
         List<String> campos = bindingResult.getAllErrors().stream().map(objectError -> {
             String nome = objectError.getObjectName();
             if (objectError instanceof FieldError ) {
                 nome = ((FieldError) objectError).getField();
+                String errorMessage = ((FieldError) objectError).getDefaultMessage();
+                nome += " (" + errorMessage + ")";
             }
             return nome;
         }).collect(Collectors.toList());

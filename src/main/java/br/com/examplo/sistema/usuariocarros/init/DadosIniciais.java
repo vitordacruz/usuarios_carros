@@ -64,6 +64,8 @@ public class DadosIniciais {
         usuario2.setLastName("Testando 02");
         usuario2.setPhone("55+ 21 9.9999.8888");
 
+        usuarioService.salvar(usuario2);
+
         Carro carro3 = new Carro();
 
         carro3.setColor("Amarelo");
@@ -80,13 +82,10 @@ public class DadosIniciais {
         carro4.setYear(1960);
         carro4.setUsuario(usuario2);
 
-        List<Carro> carros = new ArrayList<>();
-        carros.add(carro3);
-        carros.add(carro4);
 
-        usuario2.setCars(carros);
 
-        usuarioService.salvar(usuario2);
+        carroService.salvar(carro3);
+        carroService.salvar(carro4);
 
     }
 

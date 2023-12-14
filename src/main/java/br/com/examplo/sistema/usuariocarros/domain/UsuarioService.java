@@ -5,6 +5,7 @@ import br.com.examplo.sistema.usuariocarros.domain.exception.AuthorizationExcept
 import br.com.examplo.sistema.usuariocarros.domain.exception.EntidadeEmUsoException;
 import br.com.examplo.sistema.usuariocarros.domain.exception.NegocioException;
 import br.com.examplo.sistema.usuariocarros.domain.exception.UsuarioNaoEncontradoException;
+import br.com.examplo.sistema.usuariocarros.domain.model.Carro;
 import br.com.examplo.sistema.usuariocarros.domain.model.Usuario;
 import br.com.examplo.sistema.usuariocarros.domain.repository.UsuarioRepository;
 import br.com.examplo.sistema.usuariocarros.security.JWTUtil;
@@ -22,6 +23,7 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -55,20 +57,12 @@ public class UsuarioService {
 
         Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
 
-        if (usuarioExistente.isPresent() && !usuarioExistente.get().equals(usuario)) {
-            log.info("Usuário tentou salvar um usuário com e-mail já existente.");
-            throw new NegocioException(
-                    messageSource.getMessage("email.ja.existe", null, null), ConstantesComum.ERROR_CODE_EMAIL_JA_EXISTENTE);
-        }
+        validaEmailJaExiste(usuario, usuarioExistente);
 
         Optional<Usuario> usuarioExistenteLogin = usuarioRepository.findByLogin(usuario.getLogin());
 
-        if (usuarioExistenteLogin.isPresent() && !usuarioExistenteLogin.get().equals(usuario)) {
-            log.info("Usuário tentou salvar um usuário com login já existente.");
-            throw new NegocioException(
-                    messageSource.getMessage("login.ja.existe", null, null), ConstantesComum.ERROR_CODE_LOGIN_JA_EXISTENTE);
-        }
-
+        validaLoginJaExiste(usuario, usuarioExistenteLogin);
+        log.info("usuario.getId(): " + usuario.getId());
         if (usuario.getId() != null) {
 
             Optional<Usuario> usuarioAtual = usuarioRepository.findById(usuario.getId());
@@ -77,7 +71,10 @@ public class UsuarioService {
 
                 // usuarioRepository.detach(usuarioAtual.get());
 
-                carroService.excluirTodos(usuarioAtual.get().getCars());
+                List<Carro> listaCarros = new ArrayList<>();
+                listaCarros.addAll(usuarioAtual.get().getCars());
+                carroService.excluirTodos(listaCarros);
+                usuarioAtual.get().setCars(new ArrayList<>());
 
                 usuario.setCreatedAt(usuarioAtual.get().getCreatedAt());
 
@@ -90,46 +87,64 @@ public class UsuarioService {
 
         if (usuario.getCars() != null) {
 
-            log.debug("usuario.getCars().size(): " + usuario.getCars().size());
-
             var listaPlacaCarros = new ArrayList<String>();
 
             usuario.getCars().forEach(carro ->{
 
-
-                if (!carroService.placaExiste(carro.getLicensePlate(), usuario.getId()) &&
-                        !listaPlacaCarros.contains(carro.getLicensePlate())) {
-
-                    carro.setUsuario(usuario);
-                    listaPlacaCarros.add(carro.getLicensePlate());
-
-                } else {
-                    log.info("Já existe um carro com essa placa");
-                    throw new NegocioException(
-                            messageSource.getMessage("placa.carro.ja.existe", null, null), ConstantesComum.ERROR_CODE_PLACA_CARRO_JA_EXISTE);
-                }
+                validaPlacaExiste(usuario, listaPlacaCarros, carro);
 
             });
         }
 
         usuario.setPassword(JWTUtil.encodePassword(usuario.getPassword()));
-
         return usuarioRepository.save(usuario);
 
 
     }
 
+    private void validaPlacaExiste(Usuario usuario, ArrayList<String> listaPlacaCarros, Carro carro) {
+        if (!carroService.placaExiste(carro.getLicensePlate(), usuario.getId()) &&
+                !listaPlacaCarros.contains(carro.getLicensePlate())) {
+
+            carro.setUsuario(usuario);
+            listaPlacaCarros.add(carro.getLicensePlate());
+
+        } else {
+            log.info("Já existe um carro com essa placa");
+            throw new NegocioException(
+                    messageSource.getMessage("placa.carro.ja.existe", null, null), ConstantesComum.ERROR_CODE_PLACA_CARRO_JA_EXISTE);
+        }
+    }
+
+    private void validaLoginJaExiste(Usuario usuario, Optional<Usuario> usuarioExistenteLogin) {
+        if (usuarioExistenteLogin.isPresent() && !usuarioExistenteLogin.get().equals(usuario)) {
+            log.info("Usuário tentou salvar um usuário com login já existente.");
+            throw new NegocioException(
+                    messageSource.getMessage("login.ja.existe", null, null), ConstantesComum.ERROR_CODE_LOGIN_JA_EXISTENTE);
+        }
+    }
+
+    private void validaEmailJaExiste(Usuario usuario, Optional<Usuario> usuarioExistente) {
+        if (usuarioExistente.isPresent() && !usuarioExistente.get().equals(usuario)) {
+            log.info("Usuário tentou salvar um usuário com e-mail já existente.");
+            throw new NegocioException(
+                    messageSource.getMessage("email.ja.existe", null, null), ConstantesComum.ERROR_CODE_EMAIL_JA_EXISTENTE);
+        }
+    }
+
     @Transactional
-    public void excluir(Long cozinhaId) {
+    public void excluir(Long usuarioId) {
         try {
-            usuarioRepository.deleteById(cozinhaId);
+            var usuarioAtual  = this.buscarOuFalhar(usuarioId);
+            carroService.excluirTodos(usuarioAtual.getCars());
+            usuarioRepository.deleteById(usuarioId);
             usuarioRepository.flush();
             log.info("Usuário excluido.");
         } catch (EmptyResultDataAccessException e) {
-            throw new UsuarioNaoEncontradoException(cozinhaId);
+            throw new UsuarioNaoEncontradoException(usuarioId);
         } catch (DataIntegrityViolationException e) {
             throw new EntidadeEmUsoException(
-                    String.format(MSG_USUARIO_EM_USO, cozinhaId));
+                    String.format(MSG_USUARIO_EM_USO, usuarioId));
         }
     }
 

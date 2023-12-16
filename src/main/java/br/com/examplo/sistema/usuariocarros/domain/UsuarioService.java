@@ -136,7 +136,9 @@ public class UsuarioService {
     public void excluir(Long usuarioId) {
         try {
             var usuarioAtual  = this.buscarOuFalhar(usuarioId);
-            carroService.excluirTodos(usuarioAtual.getCars());
+            var carros = new ArrayList<Carro>();
+            carros.addAll(usuarioAtual.getCars());
+            carroService.excluirTodos(carros);
             usuarioRepository.deleteById(usuarioId);
             usuarioRepository.flush();
             log.info("Usuário excluido.");

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import br.com.examplo.sistema.usuariocarros.domain.model.Carro;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class UsuarioInputDTO {
     @Email
     private String email;
     @NotNull
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate birthday;
     @NotBlank
     private String login;

@@ -9,19 +9,13 @@ import br.com.examplo.sistema.usuariocarros.api.controller.dto.UserLoginDTO;
 import br.com.examplo.sistema.usuariocarros.api.controller.dto.UsuarioDTO;
 import br.com.examplo.sistema.usuariocarros.assembler.UsuarioDTOAssembler;
 import br.com.examplo.sistema.usuariocarros.domain.UsuarioService;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthResource {
 
     @Autowired
